@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Онлайн Монополия</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        :root {
+            --bg-main: #020617;
+            --bg-panel: #050816;
+            --bg-panel-soft: #0b1120;
+            --border-soft: #1f2933;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --accent-green: #22c55e;
+            --accent-blue: #0ea5e9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        #app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Header ---------- */
+
+        header {
+            height: 56px;
+            padding: 0 16px;
+            background: #020617;
+            border-bottom: 1px solid var(--border-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-square {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f97316;
+        }
+
+        .logo-title {
+            font-size: 14px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .logo-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: 4px;
+        }
+
+        #topbar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            border-radius: 999px;
+            border: 1px solid transparent;
+            padding: 6px 14px;
+            font-size: 13px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: #111827;
+        }
+
+        .nav-btn.active {
+            background: #111827;
+            border-color: var(--border-soft);
+            color: var(--text-main);
+        }
+
+        #topbar-right {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ---------- Общий layout ---------- */
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 12px 16px 16px;
+        }
+
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* ---------- ЭКРАН ИГРЫ ---------- */
+
+        #game-layout {
+            display: grid;
+            grid-template-columns: minmax(260px, 22%) minmax(0, 56%) minmax(260px, 22%);
+            gap: 0;
+            height: calc(100vh - 56px - 28px);
+            max-height: 920px;
+        }
+
+        /* Левая панель игроков */
+
+        #playersPanel {
+            background: #020617;
+            border-right: 1px solid var(--border-soft);
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #infoBox {
+            background: var(--bg-panel-soft);
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+        }
+
+        #infoBox h3 {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        #turnInfo {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        #moneyInfo {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        #rollBtn {
+            margin-top: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--accent-green);
+            color: #022c22;
+            cursor: pointer;
+        }
+
+        #rollBtn:disabled {
+            background: #4b5563;
+            color: #020617;
+            cursor: default;
+        }
+
+        #playersBox {
+            margin-top: 10px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        #playersBox h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        #playersList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .player-row {
+            background: var(--bg-panel-soft);
+            border-radius: 12px;
+            padding: 8px 10px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto auto;
+            column-gap: 10px;
+            row-gap: 2px;
+        }
+
+        .player-row::after {
+            content: "";
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            justify-self: flex-end;
+            align-self: center;
+            width: 26px;
+            height: 10px;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 20% 50%, #f97316 0 35%, transparent 36%),
+                radial-gradient(circle at 50% 50%, #22c55e 0 35%, transparent 36%),
+                radial-gradient(circle at 80% 50%, #0ea5e9 0 35%, transparent 36%);
+        }
+
+        .player-dot {
+            grid-row: 1 / 3;
+            grid-column: 1 / 2;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #f97316;
+        }
+
+        .player-row span:nth-child(2) {
+            /* имя */
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            font-size: 13px;
+        }
+
+        .player-row span:nth-child(3) {
+            /* деньги */
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* Центральная колонка — поле */
+
+        #boardColumn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #020617;
+        }
+
+        #boardWrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #board {
+            position: relative;
+            width: min(100%, 90vh);
+            aspect-ratio: 1 / 1;
+            background: #111827;
+            border-radius: 20px;
+            border: 2px solid #1f2937;
+
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+            padding: 3%;
+        }
+
+        #board-center-label {
+            position: absolute;
+            inset: 21%;
+            border-radius: 18px;
+            border: 1px solid #1f2937;
+            background: #020617;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #board-center-label .mono-logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        #board-center-label .mono-subtitle {
+            margin-top: 6px;
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell-card {
+            position: relative;
+            width: 94%;
+            height: 94%;
+            margin: 0 auto;
+            perspective: 1200px;
+        }
+
+        .cell-card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.35s ease;
+        }
+
+        .cell-card:hover .cell-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .cell-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+        }
+
+        .cell-front {
+            background: #020617;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cell-back {
+            background: #020617;
+            color: var(--text-main);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            padding: 6px 7px;
+            font-size: 11px;
+        }
+
+        .cell-strip {
+            width: 100%;
+            height: 24%;
+            background: #9ca3af; /* цвет залит JS по группам */
+        }
+
+        .cell-body {
+            flex: 1;
+            padding: 6px 7px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .cell-icon {
+            font-size: 18px;
+        }
+
+        .cell-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .cell-back-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .cell-back-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .cell-back-line {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .price-tag {
+            margin-top: 2px;
+            font-size: 11px;
+            color: #fde68a;
+        }
+
+        .current-cell .cell-front {
+            outline: 2px solid #facc15;
+        }
+
+        /* Вытянутые прямоугольники вдоль сторон */
+        .side-top .cell-card,
+        .side-bottom .cell-card {
+            height: 200%;
+        }
+
+        .side-left .cell-card,
+        .side-right .cell-card {
+            width: 200%;
+        }
+
+        /* Поворот карточек: цветная полоска всегда с внешней стороны */
+
+        .side-top .cell-card {
+            transform: rotate(0deg);
+        }
+
+        .side-bottom .cell-card {
+            transform: rotate(180deg);
+        }
+
+        .side-left .cell-card {
+            transform: rotate(-90deg);
+        }
+
+        .side-right .cell-card {
+            transform: rotate(90deg);
+        }
+
+        /* Угловые клетки: визуально крупнее (минимальные отступы) */
+
+        .cell[data-type="start"] .cell-card,
+        .cell[data-type="corner"] .cell-card,
+        .cell[data-type="prison"] .cell-card {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* ---------- Правая панель: лог / чат ---------- */
+
+        #logPanel {
+            background: rgba(15,23,42,0.96);
+            border-left: 1px solid var(--border-soft);
+            padding: 12px 12px 12px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #logHeader {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        #log {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.35;
+            overflow-y: auto;
+        }
+
+        #log br {
+            line-height: 1.35;
+        }
+
+        #roomsSideBox {
+            margin-top: 10px;
+            background: var(--bg-panel-soft);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        #roomsSideBox h3 {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        #roomsList-side {
+            max-height: 130px;
+            overflow-y: auto;
+        }
+
+        /* ---------- ЭКРАН ПРОФИЛЯ ---------- */
+
+        #profile-main {
+            display: grid;
+            grid-template-columns: minmax(260px, 26%) minmax(0, 1fr);
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--bg-panel-soft);
+            border-radius: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-soft);
+        }
+
+        .panel h3 {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        #profileStats {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        #themesList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .theme-card {
+            background: #020617;
+            border-radius: 10px;
+            padding: 8px 9px;
+            border: 1px solid var(--border-soft);
+            font-size: 12px;
+        }
+
+        .theme-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .theme-desc {
+            color: var(--text-muted);
+        }
+
+        .theme-card button {
+            margin-top: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: none;
+            background: #111827;
+            color: var(--text-main);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* ---------- Лобби ---------- */
+
+        #lobby-inner {
+            display: grid;
+            grid-template-columns: minmax(260px, 26%) minmax(0, 1fr);
+            gap: 16px;
+        }
+
+        #lobbyBox input {
+            width: 100%;
+            margin-top: 6px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-soft);
+            background: #020617;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        #lobbyBox button {
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        #lobbyBox button:first-child {
+            background: var(--accent-green);
+            color: #022c22;
+        }
+
+        #lobbyBox button:last-child {
+            background: var(--accent-blue);
+            color: #022c22;
+        }
+
+        #rooms {
+            font-size: 13px;
+        }
+
+        #rooms button {
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: none;
+            background: #111827;
+            color: var(--text-main);
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        #roomsList {
+            margin-top: 8px;
+        }
+
+        .room-item {
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: #020617;
+            border: 1px solid var(--border-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .room-name {
+            font-weight: 600;
+        }
+
+        .room-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ---------- Модалки ---------- */
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal {
+            background: #020617;
+            border-radius: 14px;
+            padding: 14px 16px;
+            width: 90%;
+            max-width: 340px;
+            border: 1px solid var(--border-soft);
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .modal h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .modal-buttons {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .modal-buttons button {
+            padding: 5px 12px;
+            border-radius: 999px;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .modal-buttons button:first-child {
+            background: var(--accent-green);
+            color: #022c22;
+        }
+
+        .modal-buttons button:last-child {
+            background: #111827;
+            color: var(--text-main);
+        }
+
+        /* ---------- Адаптив ---------- */
+
+        @media (max-width: 1100px) {
+            #game-layout {
+                grid-template-columns: minmax(260px, 26%) minmax(0, 47%) minmax(220px, 27%);
+            }
+        }
+
+        @media (max-width: 900px) {
+            #game-layout {
+                grid-template-columns: 1fr;
+                grid-auto-rows: auto;
+                height: auto;
+                max-height: none;
+            }
+
+            #playersPanel,
+            #boardColumn,
+            #logPanel {
+                border: none;
+            }
+
+            #boardWrapper {
+                padding: 12px 0;
+            }
+
+            #profile-main,
+            #lobby-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <header>
+        <div id="topbar-left">
+            <div class="logo-square"></div>
+            <div>
+                <div class="logo-title">MONOPOLY</div>
+                <div class="logo-sub">онлайн</div>
+            </div>
+        </div>
+        <div id="topbar-nav">
+            <button id="nav-game" class="nav-btn" onclick="showScreen('game')">Игра</button>
+            <button id="nav-profile" class="nav-btn" onclick="showScreen('profile')">Профиль</button>
+            <button id="nav-lobby" class="nav-btn active" onclick="showScreen('lobby')">Лобби</button>
+        </div>
+        <div id="topbar-right">Темная монополия</div>
+    </header>
+
+    <main>
+        <!-- ЭКРАН ИГРЫ -->
+        <div id="screen-game" class="screen">
+            <div id="game-layout">
+                <!-- Левая колонка: игроки -->
+                <aside id="playersPanel">
+                    <div id="infoBox">
+                        <h3>Ход</h3>
+                        <div id="turnInfo">Ожидание начала игры.</div>
+                        <div id="moneyInfo"></div>
+                        <button id="rollBtn" onclick="rollDice()" disabled>Бросить кубики</button>
+                    </div>
+
+                    <div id="playersBox">
+                        <h3>Игроки</h3>
+                        <div id="playersList"></div>
+                    </div>
+                </aside>
+
+                <!-- Центр: поле -->
+                <section id="boardColumn">
+                    <div id="boardWrapper">
+                        <div id="board">
+                            <div id="board-center-label">
+                                <div class="mono-logo">MONOPOLY</div>
+                                <div class="mono-subtitle">игровое поле</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Правая колонка: лог/чат -->
+                <aside id="logPanel">
+                    <div id="logHeader">Журнал событий</div>
+                    <div id="log"></div>
+
+                    <div id="roomsSideBox">
+                        <h3>Комнаты</h3>
+                        <div id="roomsList-side"></div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- ЭКРАН ПРОФИЛЯ -->
+        <div id="screen-profile" class="screen">
+            <div id="profile-main">
+                <div class="panel">
+                    <h3>Профиль</h3>
+                    <div id="profileName"></div>
+                    <div id="profileStats"></div>
+                    <div id="profileCoins"></div>
+                </div>
+                <div class="panel">
+                    <h3>Темы доски</h3>
+                    <div id="themesList">
+                        <div class="theme-card" data-theme="classic">
+                            <div class="theme-title">Classic</div>
+                            <div class="theme-desc">Классическая монополия.</div>
+                            <button onclick="selectTheme('classic')">Выбрать</button>
+                        </div>
+                        <div class="theme-card" data-theme="dota">
+                            <div class="theme-title">Dota 2</div>
+                            <div class="theme-desc">Клетки — герои и объекты Dota.</div>
+                            <button onclick="selectTheme('dota')">Выбрать</button>
+                        </div>
+                        <div class="theme-card" data-theme="cyber">
+                            <div class="theme-title">Cyberpunk</div>
+                            <div class="theme-desc">Неоновый город и корпорации.</div>
+                            <button onclick="selectTheme('cyber')">Выбрать</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН ЛОББИ -->
+        <div id="screen-lobby" class="screen active">
+            <div id="lobby-inner">
+                <div class="panel" id="lobbyBox">
+                    <h3>Создание / вход в комнату</h3>
+                    <input id="nickname" placeholder="Ваш ник" />
+                    <input id="roomId" placeholder="ID комнаты" />
+                    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button onclick="createRoom()">Создать комнату</button>
+                        <button onclick="joinRoom()">Войти в комнату</button>
+                    </div>
+                    <div style="margin-top:8px;font-size:12px;color:var(--text-muted);">
+                        Введите ник и ID комнаты, затем создайте или войдите.
+                        Для игры перейдите во вкладку «Игра».
+                    </div>
+                </div>
+                <div class="panel" id="rooms">
+                    <h3>Комнаты</h3>
+                    <button onclick="refreshRooms()">Обновить список</button>
+                    <div id="roomsList"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Модалки -->
+<div id="buyModalOverlay" class="overlay">
+    <div id="buyModal" class="modal">
+        <h2>Покупка клетки</h2>
+        <div id="buyModalText"></div>
+        <div class="modal-buttons">
+            <button onclick="confirmBuy()">Купить</button>
+            <button onclick="confirmSkip()">Не покупать</button>
+        </div>
+    </div>
+</div>
+
+<div id="eventModalOverlay" class="overlay">
+    <div id="eventModal" class="modal">
+        <h2>Событие</h2>
+        <div id="eventModalText"></div>
+        <div id="eventModalDelta" style="font-weight:700;margin-top:8px;"></div>
+        <div class="modal-buttons">
+            <button onclick="closeEventModal()">Ок</button>
+        </div>
+    </div>
+</div>
+
+<div id="gameOverOverlay" class="overlay">
+    <div id="gameOverModal" class="modal">
+        <h2>Игра окончена</h2>
+        <div id="gameOverText"></div>
+        <div class="modal-buttons">
+            <button onclick="closeGameOverModal()">Ок</button>
+        </div>
+    </div>
+</div>
+
+<div id="bankruptOverlay" class="overlay">
+    <div id="bankruptModal" class="modal">
+        <h2>Вы выбыли</h2>
+        <div id="bankruptText"></div>
+        <div class="modal-buttons">
+            <button onclick="closeBankruptModal()">Ок</button>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
