@@ -270,8 +270,8 @@
             border: 2px solid #1f2937;
 
             display: grid;
-            grid-template-columns: repeat(11, 1fr);
-            grid-template-rows: repeat(11, 1fr);
+            grid-template-columns: 1.7fr repeat(9, 1fr) 1.7fr;
+            grid-template-rows: 1.7fr repeat(9, 1fr) 1.7fr;
             padding: 3%;
         }
 
@@ -314,8 +314,8 @@
 
         .cell-card {
             position: relative;
-            width: 94%;
-            height: 94%;
+            width: 92%;
+            height: 92%;
             margin: 0 auto;
             perspective: 1200px;
         }
@@ -407,17 +407,6 @@
             outline: 2px solid #facc15;
         }
 
-        /* Вытянутые прямоугольники вдоль сторон */
-        .side-top .cell-card,
-        .side-bottom .cell-card {
-            height: 200%;
-        }
-
-        .side-left .cell-card,
-        .side-right .cell-card {
-            width: 200%;
-        }
-
         /* Поворот карточек: цветная полоска всегда с внешней стороны */
 
         .side-top .cell-card {
@@ -436,14 +425,7 @@
             transform: rotate(90deg);
         }
 
-        /* Угловые клетки: визуально крупнее (минимальные отступы) */
-
-        .cell[data-type="start"] .cell-card,
-        .cell[data-type="corner"] .cell-card,
-        .cell[data-type="prison"] .cell-card {
-            width: 200%;
-            height: 200%;
-        }
+        /* Угловые клетки визуально крупнее за счет сетки (см. grid-template) */
 
         /* ---------- Правая панель: лог / чат ---------- */
 
